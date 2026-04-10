@@ -96,6 +96,7 @@
             padding: 20px;
             position: relative;
             overflow-y: auto; /* 確保小螢幕裝不下時可以平滑滾動，不會被裁切 */
+            min-height: 0; /* 【關鍵修正】防止子元素撐破螢幕高度，確保內部可以順利滾動，不擠掉底部導航 */
         }
 
         .puzzle-header {
@@ -288,6 +289,9 @@
         }
         .modal {
             background: white; padding: 30px; border-radius: 20px; max-width: 600px;
+            width: 90%; /* 【修正】確保手機版不會超出左右邊界 */
+            max-height: 85vh; /* 【修正】確保手機版不會超出上下邊界 */
+            overflow-y: auto; /* 【修正】內容過多時可以在視窗內滑動，確保能按到關閉按鈕 */
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }
         .modal h2 { margin-top: 0; color: var(--dark-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
@@ -311,11 +315,23 @@
         }
         @media (max-width: 768px) {
             .top-bar { flex-direction: column; gap: 15px; }
-            .content-wrapper { flex-direction: column; width: 100%; }
+            
+            /* 【修正】頂部按鈕在手機上會自動彈性換行，不再超出畫面 */
+            .controls { flex-wrap: wrap; justify-content: center; width: 100%; gap: 10px; }
+            .controls select, .controls button { flex: 1 1 45%; font-size: 0.95rem; padding: 10px; }
+            
+            /* 【修正】手機版標題適度縮小 */
+            .puzzle-title { font-size: 1.8rem; margin-bottom: 8px; }
+            .puzzle-desc { font-size: 1.1rem; }
+            
+            .content-wrapper { flex-direction: column; width: 100%; gap: 20px; }
             .card-container { width: 100%; padding: 15px; box-sizing: border-box; }
-            .text-clues { width: 100%; font-size: 1.2rem; min-height: auto; padding: 0; }
-            .clue-item { padding: 15px 20px; }
-            .grid-3x3 { width: 100%; max-width: 350px; height: auto; aspect-ratio: 1/1; }
+            .text-clues { width: 100%; font-size: 1.1rem; min-height: auto; padding: 0; }
+            .clue-item { padding: 12px 15px; margin-bottom: 12px; }
+            
+            /* 【修正】手機版圖形網格尺寸與字體，確保完全置中不跑版 */
+            .grid-3x3 { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1/1; gap: 8px; margin: 0 auto; }
+            .cell { font-size: 60px; border-width: 3px; border-radius: 15px; }
             
             /* 針對底部導航的手機排版優化 */
             .bottom-nav { 
@@ -323,6 +339,7 @@
                 gap: 15px; 
                 padding: 15px; 
                 position: static; /* 讓手機版自然堆疊 */
+                box-shadow: 0 -4px 10px rgba(0,0,0,0.08);
             }
             .nav-center {
                 position: static;
