@@ -314,32 +314,44 @@
             .card-container { padding: 25px; }
         }
         @media (max-width: 768px) {
-            .top-bar { flex-direction: column; gap: 15px; }
+            /* 【關鍵修復】解除手機版 100dvh 高度鎖定，允許整個畫面自然往下滾動，解決中間被擠壓消失的問題 */
+            body { 
+                height: auto; 
+                min-height: 100dvh; 
+                overflow-y: auto; 
+            }
+
+            .top-bar { flex-direction: column; gap: 10px; padding: 12px 15px; }
+            .top-bar-left h1 { font-size: 1.3rem; text-align: center; }
             
-            /* 【修正】頂部按鈕在手機上會自動彈性換行，不再超出畫面 */
-            .controls { flex-wrap: wrap; justify-content: center; width: 100%; gap: 10px; }
-            .controls select, .controls button { flex: 1 1 45%; font-size: 0.95rem; padding: 10px; }
+            /* 【修正】頂部按鈕在手機上會自動彈性換行，且稍微縮小間距 */
+            .controls { flex-wrap: wrap; justify-content: center; width: 100%; gap: 8px; }
+            .controls select, .controls button { flex: 1 1 45%; font-size: 0.95rem; padding: 8px; }
             
-            /* 【修正】手機版標題適度縮小 */
-            .puzzle-title { font-size: 1.8rem; margin-bottom: 8px; }
-            .puzzle-desc { font-size: 1.1rem; }
+            /* 【修正】中間展示區不再需要獨立滾動，改為跟隨整個網頁滾動 */
+            .presentation-area { overflow-y: visible; padding: 15px 10px; }
+
+            /* 【修正】手機版標題適度縮小並允許文字換行，避免撐破 */
+            .puzzle-title { font-size: 1.5rem; margin-bottom: 8px; flex-wrap: wrap; line-height: 1.4; text-align: center; }
+            .puzzle-desc { font-size: 1rem; }
             
             .content-wrapper { flex-direction: column; width: 100%; gap: 20px; }
             .card-container { width: 100%; padding: 15px; box-sizing: border-box; }
             .text-clues { width: 100%; font-size: 1.1rem; min-height: auto; padding: 0; }
             .clue-item { padding: 12px 15px; margin-bottom: 12px; }
             
-            /* 【修正】手機版圖形網格尺寸與字體，確保完全置中不跑版 */
-            .grid-3x3 { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1/1; gap: 8px; margin: 0 auto; }
-            .cell { font-size: 60px; border-width: 3px; border-radius: 15px; }
+            /* 【修正】手機版圖形網格尺寸與字體，縮小一點點讓空間更充裕 */
+            .grid-3x3 { width: 100%; max-width: 300px; height: auto; aspect-ratio: 1/1; gap: 8px; margin: 0 auto; }
+            .cell { font-size: 55px; border-width: 3px; border-radius: 12px; }
             
             /* 針對底部導航的手機排版優化 */
             .bottom-nav { 
                 flex-direction: column; 
-                gap: 15px; 
+                gap: 12px; 
                 padding: 15px; 
                 position: static; /* 讓手機版自然堆疊 */
                 box-shadow: 0 -4px 10px rgba(0,0,0,0.08);
+                margin-top: auto; /* 確保內容太少時，導航列依然在畫面最底部 */
             }
             .nav-center {
                 position: static;
@@ -359,7 +371,7 @@
                 gap: 10px;
             }
             .btn-nav { flex: 1; justify-content: center; padding: 12px 10px; font-size: 1.1rem; }
-            .btn-reveal { width: 100%; justify-content: center; padding: 15px 20px; font-size: 1.1rem;}
+            .btn-reveal { width: 100%; justify-content: center; padding: 12px 20px; font-size: 1.1rem;}
             .designer-text { font-size: 0.85rem; margin-top: 5px; }
         }
     </style>
