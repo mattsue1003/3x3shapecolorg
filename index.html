@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大腦體操 - 九宮格形色排排樂 (大螢幕出題版)</title>
+    
+    <style>
+        :root {
+            --primary-color: #059669; /* Emerald 600 */
+            --primary-hover: #047857; /* Emerald 700 */
+            --dark-color: #064e3b;    /* Emerald 900 */
+            --bg-color: #f0fdf4;      /* Emerald 50 */
+            --accent-color: #ea580c;  /* Orange 600 */
+            --card-bg: #ffffff;
+            
+            /* 牌卡顏色 */
+            --c-red: #ef4444;
+            --c-blue: #3b82f6;
+            --c-green: #22c55e;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: "PingFang TC", "Microsoft JhengHei", Arial, sans-serif; 
+            background: var(--bg-color); 
+            margin: 0; 
+            padding: 0;
+            color: #334155;
+            -webkit-font-smoothing: antialiased; 
+            display: flex;
+            flex-direction: column;
+            height: 100dvh; /* 優化手機瀏覽器高度 */
+            overflow: hidden; /* 防止外層滾動，維持簡報感 */
+        }
+
+        /* --- 頂部控制列 --- */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .top-bar-left h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        select { background-color: #f8fafc; }
+        select:focus { outline: none; border-color: var(--primary-color); }
+
+        .btn-primary { background: var(--primary-color); color: white; border: none; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(5,150,105,0.2); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary { background: white; color: var(--primary-color); border: 2px solid var(--primary-color); }
+        .btn-secondary:hover { background: #d1fae5; }
+
+        /* --- 主展示區 --- */
+        .presentation-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-y: auto; /* 確保小螢幕裝不下時可以平滑滾動，不會被裁切 */
+        }
+
+        .puzzle-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .puzzle-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .puzzle-desc {
+            font-size: 1.2rem;
+            color: #475569;
+            margin: 0;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+
+        /* --- 網格與內容 --- */
+        .content-wrapper {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            perspective: 1000px;
+        }
+
+        .card-container {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 4px solid #e2e8f0;
+            transition: all 0.5s ease;
+        }
+
+        .card-container.answer-mode {
+            border-color: #fbcfe8;
+            background: #fdf2f8;
+            transform: rotateY(360deg);
+        }
+
+        /* 大網格 */
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            width: 450px;
+            height: 450px;
+        }
+
+        .cell {
+            border: 3px solid #cbd5e1;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            background: #f8fafc;
+            line-height: 1;
+            transition: all 0.3s;
+        }
+
+        .cell.empty {
+            border: 3px dashed #94a3b8;
+            background: #ffffff;
+        }
+
+        .card-container.answer-mode .cell {
+            border-color: #fbcfe8;
+            background: white;
+        }
+
+        /* 文字線索模式 */
+        .text-clues {
+            width: 600px;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 10px;
+        }
+
+        .clue-item {
+            margin-bottom: 12px;
+            padding: 15px 20px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            border-left: 6px solid var(--primary-color);
+        }
+
+        .clue-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- 底部導航 --- */
+        .bottom-nav {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative; /* 為了讓中間區塊絕對置中 */
+            z-index: 10;
+        }
+
+        .nav-left {
+            flex: 1;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .nav-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .designer-text {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #64748b;
+        }
+
+        .btn-nav {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-reveal {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-reveal:hover { background: #c2410c; transform: scale(1.05); }
+
+        /* --- DIY 說明彈跳窗 --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal {
+            background: white; padding: 30px; border-radius: 20px; max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal h2 { margin-top: 0; color: var(--dark-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        .modal p { line-height: 1.6; font-size: 1.1rem; color: #334155; }
+        .modal-close { display: block; width: 100%; margin-top: 20px; }
+
+        /* 響應式 */
+        @media (max-width: 1024px) {
+            .grid-3x3 { width: 350px; height: 350px; }
+            .cell { font-size: 60px; }
+            .text-clues { width: 450px; font-size: 1.2rem; min-height: auto; }
+            .puzzle-title { font-size: 2rem; }
+        }
+        @media (max-width: 768px) {
+            .top-bar { flex-direction: column; gap: 15px; }
+            .content-wrapper { flex-direction: column; width: 100%; }
+            .card-container { width: 100%; padding: 15px; box-sizing: border-box; }
+            .text-clues { width: 100%; font-size: 1.1rem; min-height: auto; padding: 0; }
+            .grid-3x3 { width: 100%; max-width: 350px; height: auto; aspect-ratio: 1/1; }
+            
+            /* 針對底部導航的手機排版優化 */
+            .bottom-nav { 
+                flex-direction: column; 
+                gap: 15px; 
+                padding: 15px; 
+                position: static; /* 讓手機版自然堆疊 */
+            }
+            .nav-center {
+                position: static;
+                transform: none;
+                order: -1; /* 中間按鈕與文字移到導航上方 */
+                width: 100%;
+            }
+            .nav-left {
+                order: -2; /* 進度文字放在最上方 */
+                width: 100%;
+                justify-content: center;
+                margin-bottom: -5px;
+            }
+            .nav-right {
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .btn-nav { flex: 1; justify-content: center; padding: 12px 10px; font-size: 1.1rem; }
+            .btn-reveal { width: 100%; justify-content: center; padding: 15px 20px; font-size: 1.1rem;}
+            .designer-text { font-size: 0.85rem; margin-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 頂部控制列 -->
+<div class="top-bar">
+    <div class="top-bar-left">
+        <h1>🧩 九宮格形色排排樂 <span style="font-size: 1rem; color: #64748b; font-weight: normal;">(出題版)</span></h1>
+    </div>
+    <div class="controls">
+        <button class="btn-secondary" onclick="document.getElementById('diyModal').style.display='flex'">💡 DIY 牌卡說明</button>
+        <select id="modeSelect">
+            <option value="mode1">👁️ 模式一：空間對應 (看圖)</option>
+            <option value="mode2">🧠 模式二：形色數獨 (圖形)</option>
+            <option value="mode3">📝 模式三：文字推理 (文字)</option>
+            <option value="mixed" selected>🎲 混合隨機出題</option>
+        </select>
+        <button class="btn-primary" onclick="initGame()">✨ 產生新題庫</button>
+        <button class="btn-secondary" onclick="toggleFullScreen()">⛶ 全螢幕</button>
+    </div>
+</div>
+
+<!-- 遊戲展示區 -->
+<div class="presentation-area">
+    <div class="puzzle-header">
+        <h2 class="puzzle-title" id="puzzleTitle">載入中...</h2>
+        <p class="puzzle-desc" id="puzzleDesc"></p>
+    </div>
+
+    <div class="content-wrapper">
+        <!-- 題目區 -->
+        <div class="card-container" id="questionCard">
+            <!-- 內容會由 JS 動態生成 -->
+        </div>
+
+        <!-- 解答區 (預設隱藏，或顯示在旁邊) -->
+        <div class="card-container answer-mode" id="answerCard" style="display: none;">
+            <!-- 解答內容 -->
+        </div>
+    </div>
+</div>
+
+<!-- 底部導航 -->
+<div class="bottom-nav">
+    <div class="nav-left">
+        <div class="progress-text" id="progressText">第 0 / 0 題</div>
+    </div>
+    
+    <div class="nav-center">
+        <button class="btn-reveal" id="btnReveal" onclick="toggleAnswer()">👁️ 顯示解答</button>
+        <div class="designer-text">設計者：愛迪樂 鍾孟修 職能治療師</div>
+    </div>
+
+    <div class="nav-right">
+        <button class="btn-secondary btn-nav" onclick="prevPuzzle()">⬅️ 上一題</button>
+        <button class="btn-primary btn-nav" onclick="nextPuzzle()">下一題 ➡️</button>
+    </div>
+</div>
+
+<!-- DIY 說明彈窗 -->
+<div class="modal-overlay" id="diyModal">
+    <div class="modal">
+        <h2>💡 如何自己 DIY 玩家牌卡？</h2>
+        <p>為每位玩家準備 <b>1 套 (共 9 張)</b> 實體牌卡，製作方法非常簡單：</p>
+        <ol style="line-height: 1.8; font-size: 1.1rem; color: #334155;">
+            <li>準備 9 張空白名片卡，或將一張 A4 紙折/剪成 3x3 等份 (共 9 張小紙片)。</li>
+            <li>準備 <b>紅、藍、綠</b> 三種顏色的彩色筆。</li>
+            <li>在紙片上畫出圖形：<br>
+                🔸 紅色畫 1 個圓形、1 個正方形、1 個三角形。<br>
+                🔸 藍色畫 1 個圓形、1 個正方形、1 個三角形。<br>
+                🔸 綠色畫 1 個圓形、1 個正方形、1 個三角形。
+            </li>
+        </ol>
+        <p style="background: #fef3c7; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center;">
+            ⭐ 準備好牌卡後，看著螢幕出題，就可以開始排排樂囉！
+        </p>
+        <button class="btn-primary modal-close" onclick="document.getElementById('diyModal').style.display='none'">我知道了，開始遊戲</button>
+    </div>
+</div>
+
+<script>
+    // --- 核心資料定義 ---
+    const COLORS = [
+        { id: 'R', hex: '#ef4444', name: '紅色' }, 
+        { id: 'B', hex: '#3b82f6', name: '藍色' }, 
+        { id: 'G', hex: '#22c55e', name: '綠色' }  
+    ];
+    const SHAPES = [
+        { id: 'C', char: '●', name: '圓形' },
+        { id: 'S', char: '■', name: '正方形' },
+        { id: 'T', char: '▲', name: '三角形' }
+    ];
+
+    let currentPuzzles = [];
+    let currentIndex = 0;
+    let isAnswerShowing = false;
+
+    // 取得一組完整的 9 張牌卡
+    function getFullDeck() {
+        let deck = [];
+        for (let c of COLORS) {
+            for (let s of SHAPES) {
+                deck.push({ color: c, shape: s });
+            }
+        }
+        return deck;
+    }
+
+    function shuffle(array) {
+        let newArr = [...array];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        return newArr;
+    }
+
+    // --- 邏輯引擎 ---
+    function generateBaseGLS() {
+        let c = shuffle(COLORS);
+        let s = shuffle(SHAPES);
+        let gls = [
+            { color: c[0], shape: s[0] }, { color: c[1], shape: s[1] }, { color: c[2], shape: s[2] },
+            { color: c[2], shape: s[1] }, { color: c[0], shape: s[2] }, { color: c[1], shape: s[0] },
+            { color: c[1], shape: s[2] }, { color: c[2], shape: s[0] }, { color: c[0], shape: s[1] }
+        ];
+
+        if(Math.random() > 0.5) {
+            let temp = [gls[0], gls[1], gls[2]];
+            gls[0] = gls[3]; gls[1] = gls[4]; gls[2] = gls[5];
+            gls[3] = temp[0]; gls[4] = temp[1]; gls[5] = temp[2];
+        }
+        if(Math.random() > 0.5) {
+             for(let r=0; r<3; r++) {
+                 let temp = gls[r*3];
+                 gls[r*3] = gls[r*3+1];
+                 gls[r*3+1] = temp;
+             }
+        }
+        return gls;
+    }
+
+    const textTemplates = [
+        function() {
+            let c = shuffle(COLORS);
+            let s = shuffle(SHAPES);
+            let board = [
+                {color: c[0], shape: s[0]}, {color: c[0], shape: s[1]}, {color: c[0], shape: s[2]},
+                {color: c[1], shape: s[0]}, {color: c[1], shape: s[1]}, {color: c[1], shape: s[2]},
+                {color: c[2], shape: s[0]}, {color: c[2], shape: s[1]}, {color: c[2], shape: s[2]}
+            ];
+            let clues = [
+                `🔸 第一橫排的三張牌都是${c[0].name}。`,
+                `🔸 第三橫排的三張牌都是${c[2].name}。`,
+                `🔸 左邊第一直行全部都是${s[0].name}。`,
+                `🔸 右邊第一直行全部都是${s[2].name}。`,
+                `🔸 正中間的牌卡是${c[1].name}${s[1].name}。`
+            ];
+            return { type: 'text', board, clues, title: '文字推理 - 方位陣列' };
+        },
+        function() {
+            let gls = generateBaseGLS();
+            let clues = [
+                `🔸 每一橫排、每一直行，【顏色】都不重複。`,
+                `🔸 每一橫排、每一直行，【形狀】都不重複。`,
+                `🔸 左上角的牌是 ${gls[0].color.name}${gls[0].shape.name}。`,
+                `🔸 右下角的牌是 ${gls[8].color.name}${gls[8].shape.name}。`,
+                `🔸 正中間的牌是 ${gls[4].color.name}${gls[4].shape.name}。`,
+                `🔸 右上角的牌是 ${gls[2].color.name}。左下角的牌是 ${gls[6].shape.name}。`
+            ];
+            return { type: 'text', board: gls, clues, title: '文字推理 - 形色數獨' };
+        }
+    ];
+
+    function generatePuzzles(mode, count) {
+        let puzzles = [];
+        const modes = ['mode1', 'mode2', 'mode3'];
+
+        for (let i = 0; i < count; i++) {
+            let currentMode = mode;
+            if (mode === 'mixed') {
+                currentMode = modes[Math.floor(Math.random() * modes.length)];
+            }
+
+            if (currentMode === 'mode1') {
+                puzzles.push({
+                    id: i + 1, type: 'visual',
+                    title: '模式一：空間對應',
+                    desc: '👀 請觀察下圖，將你手上的牌卡排成一模一樣的位置。',
+                    board: shuffle(getFullDeck()), 
+                    answer: null 
+                });
+            } else if (currentMode === 'mode2') {
+                let ans = generateBaseGLS();
+                let visibleIndices = shuffle([0,1,2,3,4,5,6,7,8]).slice(0, 4);
+                let board = ans.map((cell, idx) => visibleIndices.includes(idx) ? cell : null);
+                
+                puzzles.push({
+                    id: i + 1, type: 'sudoku',
+                    title: '模式二：形色數獨',
+                    desc: '🧠 每一橫排、每一直行，【顏色】與【形狀】都不能重複！',
+                    board: board, answer: ans
+                });
+            } else if (currentMode === 'mode3') {
+                let generator = textTemplates[i % textTemplates.length];
+                let pData = generator();
+                
+                puzzles.push({
+                    id: i + 1, type: 'text',
+                    title: '模式三：' + pData.title,
+                    desc: '📝 請依照下列文字線索，推理出每張牌正確的位置。',
+                    clues: pData.clues, answer: pData.board
+                });
+            }
+        }
+        return puzzles;
+    }
+
+    // --- UI 渲染邏輯 ---
+    function renderCellHTML(cellData) {
+        if (!cellData) return `<div class="cell empty"></div>`;
+        return `<div class="cell" style="color: ${cellData.color.hex};">${cellData.shape.char}</div>`;
+    }
+
+    function buildGridHTML(boardArray) {
+        let gridHTML = boardArray.map(cell => renderCellHTML(cell)).join('');
+        return `<div class="grid-3x3">${gridHTML}</div>`;
+    }
+
+    function buildTextHTML(clues) {
+        let cluesHTML = clues.map(c => `<div class="clue-item">${c}</div>`).join('');
+        return `<div class="text-clues">${cluesHTML}</div>`;
+    }
+
+    function updateUI() {
+        const puzzle = currentPuzzles[currentIndex];
+        
+        // 更新標題與進度
+        document.getElementById('puzzleTitle').innerHTML = `第 ${currentIndex + 1} 題 <span style="font-size: 1.5rem; color: var(--primary-color);">|</span> ${puzzle.title}`;
+        document.getElementById('puzzleDesc').innerHTML = puzzle.desc;
+        document.getElementById('progressText').innerText = `目前進度：${currentIndex + 1} / ${currentPuzzles.length}`;
+
+        const qCard = document.getElementById('questionCard');
+        const aCard = document.getElementById('answerCard');
+        
+        // 渲染題目
+        if (puzzle.type === 'visual' || puzzle.type === 'sudoku') {
+            qCard.innerHTML = buildGridHTML(puzzle.board);
+        } else if (puzzle.type === 'text') {
+            qCard.innerHTML = buildTextHTML(puzzle.clues);
+        }
+
+        // 渲染解答 (預先建立好，藏起來)
+        if (puzzle.answer) {
+            aCard.innerHTML = buildGridHTML(puzzle.answer);
+            document.getElementById('btnReveal').style.display = 'inline-flex';
+        } else {
+            // 模式一是看圖排，題目就是解答
+            aCard.innerHTML = buildGridHTML(puzzle.board);
+            document.getElementById('btnReveal').style.display = 'none'; // 可以隱藏，或顯示一樣的東西
+        }
+
+        // 重置解答顯示狀態
+        isAnswerShowing = false;
+        qCard.style.display = 'block';
+        aCard.style.display = 'none';
+        document.getElementById('btnReveal').innerText = '👁️ 顯示解答';
+        document.getElementById('btnReveal').style.background = 'var(--accent-color)';
+    }
+
+    function toggleAnswer() {
+        const qCard = document.getElementById('questionCard');
+        const aCard = document.getElementById('answerCard');
+        const btn = document.getElementById('btnReveal');
+
+        isAnswerShowing = !isAnswerShowing;
+
+        if (isAnswerShowing) {
+            qCard.style.display = 'none';
+            aCard.style.display = 'block';
+            btn.innerText = '🙈 隱藏解答';
+            btn.style.background = '#64748b'; // 變灰色
+        } else {
+            qCard.style.display = 'block';
+            aCard.style.display = 'none';
+            btn.innerText = '👁️ 顯示解答';
+            btn.style.background = 'var(--accent-color)';
+        }
+    }
+
+    function nextPuzzle() {
+        if (currentIndex < currentPuzzles.length - 1) {
+            currentIndex++;
+            updateUI();
+        } else {
+            alert('恭喜！已經是最後一題了，可以點擊「產生新題庫」繼續挑戰！');
+        }
+    }
+
+    function prevPuzzle() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateUI();
+        }
+    }
+
+    function initGame() {
+        const mode = document.getElementById('modeSelect').value;
+        const count = 10; // 預設一次出 10 題
+        
+        currentPuzzles = generatePuzzles(mode, count);
+        currentIndex = 0;
+        
+        updateUI();
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    // 鍵盤左右鍵切換題目
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowRight') {
+            nextPuzzle();
+        } else if (event.key === 'ArrowLeft') {
+            prevPuzzle();
+        } else if (event.key === ' ' || event.key === 'Enter') {
+            // 空白鍵或 Enter 切換解答
+            if(document.getElementById('btnReveal').style.display !== 'none') {
+                toggleAnswer();
+            }
+        }
+    });
+
+    // 初始啟動
+    window.onload = () => {
+        initGame();
+        // 第一次進來自動彈出 DIY 說明
+        setTimeout(() => {
+            document.getElementById('diyModal').style.display = 'flex';
+        }, 500);
+    };
+
+</script>
+
+</body>
+</html>
