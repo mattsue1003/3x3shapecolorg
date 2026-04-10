@@ -104,10 +104,10 @@
         }
 
         .puzzle-title {
-            font-size: 2.5rem;
+            font-size: 3rem; /* 放大標題 */
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -115,28 +115,28 @@
         }
 
         .puzzle-desc {
-            font-size: 1.2rem;
+            font-size: 1.4rem; /* 放大說明文字 */
             color: #475569;
             margin: 0;
-            max-width: 800px;
-            line-height: 1.5;
+            max-width: 900px;
+            line-height: 1.6;
         }
 
         /* --- 網格與內容 --- */
         .content-wrapper {
             display: flex;
-            gap: 40px;
+            gap: 50px; /* 增加題目與解答之間的間距 */
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px; /* 放大最大寬度限制 */
             perspective: 1000px;
         }
 
         .card-container {
             background: white;
-            padding: 25px;
-            border-radius: 20px;
+            padding: 40px; /* 增加卡片內邊距，讓畫面更寬敞 */
+            border-radius: 25px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             border: 4px solid #e2e8f0;
             transition: all 0.5s ease;
@@ -153,25 +153,25 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 12px;
-            width: 450px;
-            height: 450px;
+            gap: 15px; /* 格子間距放大 */
+            width: 550px; /* 網格整體放大 */
+            height: 550px;
         }
 
         .cell {
-            border: 3px solid #cbd5e1;
-            border-radius: 15px;
+            border: 4px solid #cbd5e1;
+            border-radius: 20px; /* 圓角放大 */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 80px;
+            font-size: 120px; /* 圖形字體大幅放大 */
             background: #f8fafc;
             line-height: 1;
             transition: all 0.3s;
         }
 
         .cell.empty {
-            border: 3px dashed #94a3b8;
+            border: 4px dashed #94a3b8;
             background: #ffffff;
         }
 
@@ -182,24 +182,24 @@
 
         /* 文字線索模式 */
         .text-clues {
-            width: 600px;
-            min-height: 450px;
+            width: 850px; /* 寬度大幅放寬 */
+            min-height: 550px; /* 最小高度也配合圖形模式放大 */
             display: flex;
             flex-direction: column;
             justify-content: center;
-            font-size: 1.35rem;
+            font-size: 1.9rem; /* 文字線索字體大幅放大 */
             font-weight: bold;
             color: #1e293b;
-            line-height: 1.6;
+            line-height: 1.7;
             padding: 10px;
         }
 
         .clue-item {
-            margin-bottom: 12px;
-            padding: 15px 20px;
+            margin-bottom: 18px; /* 條目間距放大 */
+            padding: 20px 30px; /* 條目內邊距放大 */
             background: #f1f5f9;
-            border-radius: 10px;
-            border-left: 6px solid var(--primary-color);
+            border-radius: 12px;
+            border-left: 8px solid var(--primary-color);
         }
 
         .clue-item:last-child {
@@ -295,17 +295,26 @@
         .modal-close { display: block; width: 100%; margin-top: 20px; }
 
         /* 響應式 */
+        @media (max-width: 1200px) { /* 新增中等螢幕過渡尺寸 */
+            .grid-3x3 { width: 450px; height: 450px; }
+            .cell { font-size: 90px; }
+            .text-clues { width: 700px; font-size: 1.6rem; min-height: 450px; }
+            .puzzle-title { font-size: 2.5rem; }
+            .card-container { padding: 30px; }
+        }
         @media (max-width: 1024px) {
-            .grid-3x3 { width: 350px; height: 350px; }
-            .cell { font-size: 60px; }
-            .text-clues { width: 450px; font-size: 1.2rem; min-height: auto; }
-            .puzzle-title { font-size: 2rem; }
+            .grid-3x3 { width: 380px; height: 380px; }
+            .cell { font-size: 70px; }
+            .text-clues { width: 550px; font-size: 1.4rem; min-height: auto; }
+            .puzzle-title { font-size: 2.2rem; }
+            .card-container { padding: 25px; }
         }
         @media (max-width: 768px) {
             .top-bar { flex-direction: column; gap: 15px; }
             .content-wrapper { flex-direction: column; width: 100%; }
             .card-container { width: 100%; padding: 15px; box-sizing: border-box; }
-            .text-clues { width: 100%; font-size: 1.1rem; min-height: auto; padding: 0; }
+            .text-clues { width: 100%; font-size: 1.2rem; min-height: auto; padding: 0; }
+            .clue-item { padding: 15px 20px; }
             .grid-3x3 { width: 100%; max-width: 350px; height: auto; aspect-ratio: 1/1; }
             
             /* 針對底部導航的手機排版優化 */
